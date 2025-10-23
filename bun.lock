@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "ezzieyguywuf.com.raw",
+      "name": "ezzieyguywuf.com",
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^6.2.1",
         "svelte": "^5.39.6",
