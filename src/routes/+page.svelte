@@ -1,12 +1,15 @@
 <script lang="ts">
-  import Counter from "./lib/Counter.svelte";
+  import Counter from "$lib/Counter.svelte";
 
   const changelog = [
     {
       date: "2025-10-23",
       changes: [
+        "Made buttons bigger.",
+        "Migrated to sveltekit.",
         "Added persistent, multi-tab counter.",
         "Converted project to TypeScript.",
+        "Migrated to SvelteKit.",
       ],
     },
     {
@@ -17,6 +20,8 @@
 </script>
 
 <main>
+  <h1>ezzieyguywuf.com</h1>
+
   <div class="card">
     <p>This button tells you how many time's it's been clicked!</p>
     <Counter />
@@ -53,6 +58,7 @@
     margin-bottom: 1.5rem;
     text-align: left;
   }
+  h1,
   h2,
   h3 {
     text-align: left;
@@ -71,3 +77,4 @@
     font-weight: bold;
   }
 </style>
+

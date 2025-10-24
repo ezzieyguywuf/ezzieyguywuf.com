@@ -1,24 +1,26 @@
 <script lang="ts">
-  let count = $state(parseInt(localStorage.getItem("count") || "0", 10));
+  import { browser } from "$app/environment";
 
-  // Save to localStorage any time the value changes
+  let count = $state(0);
+
   $effect(() => {
-    localStorage.setItem("count", String(count));
-  });
+    if (browser) {
+      // always write changes to localStorage
+      localStorage.setItem("count", String(count));
 
-  // Update count if localStorage value changed
-  $effect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === "count") {
-        count = parseInt(event.newValue || "0", 10);
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
+      // update if underlying storage changes
+      const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === "count") {
+          count = parseInt(event.newValue || "0", 10);
+        }
+      };
+      window.addEventListener("storage", handleStorageChange);
 
-    // remove the listener on cleanup
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+      // remove handler on cleanup
+      return () => {
+        window.removeEventListener("storage", handleStorageChange);
+      };
+    }
   });
 
   const increment = () => {
