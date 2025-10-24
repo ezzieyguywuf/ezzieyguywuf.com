@@ -5,6 +5,8 @@
     {
       date: "2025-10-23",
       changes: [
+        "Disable server-side rendering",
+        "Fix persistent clicks after sveltkit migration",
         "Made buttons bigger.",
         "Migrated to sveltekit.",
         "Added persistent, multi-tab counter.",

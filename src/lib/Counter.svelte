@@ -1,14 +1,25 @@
 <script lang="ts">
   import { browser } from "$app/environment";
 
-  let count = $state(0);
+  let initial_count = 0;
+  if (browser) {
+    initial_count = parseInt(localStorage.getItem("count") || "0", 10);
+  }
+  let count = $state(initial_count);
 
   $effect(() => {
     if (browser) {
-      // always write changes to localStorage
+      // This effect depends on `count`, so it will re-run whenever `count` is modified.
       localStorage.setItem("count", String(count));
+    }
+  });
 
-      // update if underlying storage changes
+  $effect(() => {
+    if (browser) {
+      // This effect has no reactive dependencies, so it only runs once on load
+      count = parseInt(localStorage.getItem("count") || "0", 10);
+
+      // update Count if underlying storage changes
       const handleStorageChange = (event: StorageEvent) => {
         if (event.key === "count") {
           count = parseInt(event.newValue || "0", 10);
@@ -16,7 +27,7 @@
       };
       window.addEventListener("storage", handleStorageChange);
 
-      // remove handler on cleanup
+      // cleanup
       return () => {
         window.removeEventListener("storage", handleStorageChange);
       };
