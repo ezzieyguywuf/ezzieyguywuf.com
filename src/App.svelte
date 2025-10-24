@@ -1,32 +1,73 @@
-<script>
+<script lang="ts">
   import Counter from "./lib/Counter.svelte";
+
+  const changelog = [
+    {
+      date: "2025-10-23",
+      changes: [
+        "Added persistent, multi-tab counter.",
+        "Converted project to TypeScript.",
+      ],
+    },
+    {
+      date: "2025-10-22",
+      changes: ["Initial deployment to GitHub Pages."],
+    },
+  ];
 </script>
 
 <main>
-  <img
-    class="construction-sign"
-    src="/under-construction.svg"
-    alt="Under Construction"
-  />
-  <h1>Under Construction</h1>
-
-  <!-- <p>This site is under construction</p> -->
-  <p>Last updated October 22nd, 2025</p>
-  <p>
-    Check back soon for (maybe) more. In the meantime, enjoy this button that
-    tells you how many times it's been clicked.
-  </p>
-
   <div class="card">
+    <p>This button tells you how many time's it's been clicked!</p>
     <Counter />
   </div>
+
+  <h2>Changelog</h2>
+  {#each changelog as entry}
+    <h3>{entry.date}</h3>
+    <ul>
+      {#each entry.changes as change}
+        <li>{change}</li>
+      {/each}
+    </ul>
+  {/each}
+
+  <h2>Coming Soon</h2>
+  <ul>
+    <li>Maybe a blog?</li>
+    <li>More interesting things to click.</li>
+    <li>Maybe a login (to save your clicks!)</li>
+  </ul>
+
+  <p class="compact">Last updated October 23rd, 2025</p>
 </main>
 
 <style>
-  .construction-sign {
-    display: block;
-    margin: 0 auto 2rem auto;
-    width: 50%;
-    max-width: 400px;
+  .compact {
+    margin-top: 0em;
+    margin-bottom: 0em;
+  }
+  ul {
+    list-style: none;
+    padding-left: 1.75rem; /* Indent the whole list */
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+  h2,
+  h3 {
+    text-align: left;
+  }
+  li {
+    position: relative;
+    /* padding-left is no longer needed here */
+    margin-bottom: 0.5rem;
+  }
+  li::before {
+    content: "→"; /* Custom bullet */
+    position: absolute;
+    left: -1.75rem; /* Position the bullet outside the text flow */
+    top: 0;
+    color: #646cff;
+    font-weight: bold;
   }
 </style>
