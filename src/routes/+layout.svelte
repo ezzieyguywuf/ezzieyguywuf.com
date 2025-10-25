@@ -11,3 +11,9 @@
 
 {@render children?.()}
 
+<style>
+  :global(main) {
+    margin: 2em;
+  }
+</style>
+

@@ -4,7 +4,10 @@
   const changelog = [
     {
       date: "2025-10-25",
-      changes: ["Fix button alignment on mobile"],
+      changes: [
+        "Fix button alignment on mobile",
+        "Fix 'Last Updated...' text getting cut off",
+      ],
     },
     {
       date: "2025-10-23",
