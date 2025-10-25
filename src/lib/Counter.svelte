@@ -43,14 +43,19 @@
   };
 </script>
 
-<button onclick={increment}>
-  count is {count}
-</button>
+<div class="button-group">
+  <button onclick={increment}>
+    count is {count}
+  </button>
 
-<button onclick={reset}> Reset </button>
+  <button onclick={reset}> Reset </button>
+</div>
 
 <style>
-  button + button {
-    margin-left: 0.5em;
+  .button-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    justify-content: center;
   }
 </style>

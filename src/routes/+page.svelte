@@ -3,6 +3,10 @@
 
   const changelog = [
     {
+      date: "2025-10-25",
+      changes: ["Fix button alignment on mobile"],
+    },
+    {
       date: "2025-10-23",
       changes: [
         "Disable server-side rendering",
