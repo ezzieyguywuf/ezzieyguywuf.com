@@ -62,6 +62,9 @@ button {
 button:hover {
   border-color: #646cff;
 }
+button:active {
+  outline: none;
+}
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;

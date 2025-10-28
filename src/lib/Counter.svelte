@@ -1,61 +1,43 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
+  import { counter, COUNTER_KEY } from "./counter";
 
-  let initial_count = 0;
-  if (browser) {
-    initial_count = parseInt(localStorage.getItem("count") || "0", 10);
-  }
-  let count = $state(initial_count);
+  let { do_reset = false, on_reset = () => {} } = $props();
 
-  $effect(() => {
-    if (browser) {
-      // This effect depends on `count`, so it will re-run whenever `count` is modified.
-      localStorage.setItem("count", String(count));
-    }
-  });
-
-  $effect(() => {
-    if (browser) {
-      // This effect has no reactive dependencies, so it only runs once on load
-      count = parseInt(localStorage.getItem("count") || "0", 10);
-
-      // update Count if underlying storage changes
-      const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === "count") {
-          count = parseInt(event.newValue || "0", 10);
-        }
-      };
-      window.addEventListener("storage", handleStorageChange);
-
-      // cleanup
-      return () => {
-        window.removeEventListener("storage", handleStorageChange);
-      };
-    }
-  });
+  let count = $state(counter.get());
 
   const increment = () => {
-    count += 1;
+    count++;
+    counter.set(count);
   };
 
   const reset = () => {
     count = 0;
+    counter.set(count);
   };
+
+  // This effect "listens" for the parent to set the do_reset latch
+  $effect(() => {
+    if (do_reset) {
+      reset();
+      on_reset(); // Signal back to the parent that the reset is done
+    }
+  });
+
+  // This effect listens for changes from other tabs
+  $effect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === COUNTER_KEY) {
+        count = parseInt(event.newValue || "0", 10);
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
+  });
 </script>
 
-<div class="button-group">
-  <button onclick={increment}>
-    count is {count}
-  </button>
-
-  <button onclick={reset}> Reset </button>
-</div>
-
-<style>
-  .button-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5em;
-    justify-content: center;
-  }
-</style>
+<button onclick={increment}>
+  {count.toLocaleString()} clicks!
+</button>
