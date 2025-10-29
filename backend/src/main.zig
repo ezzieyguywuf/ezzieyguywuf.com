@@ -68,17 +68,35 @@ pub fn main() !void {
     if (addresses.addrs.len == 0) {
         std.log.err("Did not resolve '{s}:{d}' to any ip addresses", .{ config.redis_ip, config.redis_port });
     }
-    const addr_index = std.crypto.random.intRangeLessThan(usize, 0, addresses.addrs.len);
-    const address = addresses.addrs[addr_index];
-    std.log.info("Hello, world!\n  Listening on port: {d}\n  Requested redis server: {s}:{d}", .{ config.port, config.redis_ip, config.redis_port });
 
+    var maybe_redis_client: ?okredis.Client = null;
+    var redis_reader_buffer: [1024]u8 = undefined;
+    var redis_writer_buffer: [1024]u8 = undefined;
     var stderr_buffer: [1024]u8 = undefined;
     var stderr_writer = std.fs.File.stderr().writer(&stderr_buffer);
     const stderr = &stderr_writer.interface;
     try stderr.print("  Resolved redis address: ", .{});
-    try address.format(stderr);
-    try stderr.print("\n", .{});
-    try stderr.flush();
+    for (addresses.addrs) |addr| {
+        try stderr.print("  Trying to connect to address:", .{});
+        try addr.format(stderr);
+        try stderr.print("\n", .{});
+        try stderr.flush();
+        const connection = try std.net.tcpConnectToAddress(addr);
+        maybe_redis_client = okredis.Client.init(connection, .{
+            .reader_buffer = &redis_reader_buffer,
+            .writer_buffer = &redis_writer_buffer,
+        }) catch continue;
+
+        break;
+    }
+    if (maybe_redis_client == null) {
+        std.log.err("Unable to initiate redis client with resolved ips from '{s}:{d}': are any of them ipv4?", .{ config.redis_ip, config.redis_port });
+    }
+    var redis_client = maybe_redis_client.?;
+    defer redis_client.close();
+
+    std.log.info("Hello, world!\n  Listening on port: {d}\n  Requested redis server: {s}:{d}", .{ config.port, config.redis_ip, config.redis_port });
+    try redis_client.send(void, .{ "SET", "foo", "42" });
 
     var server = try httpz.Server(void).init(allocator, .{
         .port = config.port,
