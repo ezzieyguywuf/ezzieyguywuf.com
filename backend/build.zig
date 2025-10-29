@@ -13,9 +13,11 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
-    const httpz_dep = b.dependency("httpz", .{});
-    const httpz_module = httpz_dep.module("httpz");
-    exe.root_module.addImport("httpz", httpz_module);
+    const httpz_dep = b.dependency("httpz", .{}).module("httpz");
+    exe.root_module.addImport("httpz", httpz_dep);
+
+    const okredis_dep = b.dependency("okredis", .{}).module("okredis");
+    exe.root_module.addImport("okredis", okredis_dep);
 
     b.installArtifact(exe);
 
