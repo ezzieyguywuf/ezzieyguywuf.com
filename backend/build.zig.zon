@@ -1,0 +1,14 @@
+.{
+    .name = .backend,
+    .fingerprint = 0x8fe5c9710441ac81,
+    .version = "0.0.1",
+    .minimum_zig_version = "0.16.0-dev.747+493ad58ff",
+    .paths = .{""},
+
+    .dependencies = .{
+        .httpz = .{
+            .url = "https://github.com/karlseguin/http.zig/archive/9c918865554c82648cd5eeff52b373d291625edc.tar.gz",
+            .hash = "httpz-0.0.0-PNVzrBXyBgBR5yTLW6dUTWtXSahqFsLdEwFI3tVy5J72",
+        },
+    },
+}
