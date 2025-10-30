@@ -2,6 +2,12 @@ const std = @import("std");
 const httpz = @import("httpz");
 const okredis = @import("okredis");
 
+const COMMUNITY_COUNTER = "community_counter";
+
+const Context = struct {
+    redis_client: okredis.Client,
+};
+
 const Config = struct {
     port: u16 = 0,
     redis_ip: []const u8 = "",
@@ -62,7 +68,6 @@ pub fn main() !void {
             std.log.warn("Unknown argument: {s}, this is not being used", .{arg});
         }
     }
-    // const redis_ip = try std.net.Address.resolveIp(config.redis_ip, config.redis_port);
     const addresses = try std.net.getAddressList(allocator, config.redis_ip, config.redis_port);
     defer addresses.deinit();
     if (addresses.addrs.len == 0) {
@@ -81,7 +86,7 @@ pub fn main() !void {
         try addr.format(stderr);
         try stderr.print("\n", .{});
         try stderr.flush();
-        const connection = try std.net.tcpConnectToAddress(addr);
+        const connection = std.net.tcpConnectToAddress(addr) catch continue;
         maybe_redis_client = okredis.Client.init(connection, .{
             .reader_buffer = &redis_reader_buffer,
             .writer_buffer = &redis_writer_buffer,
@@ -92,16 +97,16 @@ pub fn main() !void {
     if (maybe_redis_client == null) {
         std.log.err("Unable to initiate redis client with resolved ips from '{s}:{d}': are any of them ipv4?", .{ config.redis_ip, config.redis_port });
     }
-    var redis_client = maybe_redis_client.?;
-    defer redis_client.close();
+
+    var context = Context{ .redis_client = maybe_redis_client.? };
+    defer context.redis_client.close();
 
     std.log.info("Hello, world!\n  Listening on port: {d}\n  Requested redis server: {s}:{d}", .{ config.port, config.redis_ip, config.redis_port });
-    try redis_client.send(void, .{ "SET", "foo", "42" });
 
-    var server = try httpz.Server(void).init(allocator, .{
+    var server = try httpz.Server(*Context).init(allocator, .{
         .port = config.port,
         .request = .{},
-    }, {});
+    }, &context);
     defer server.deinit();
     defer server.stop();
 
@@ -112,6 +117,25 @@ pub fn main() !void {
     try server.listen();
 }
 
-fn increment_counter(_: *httpz.Request, res: *httpz.Response) !void {
-    res.status = 200;
+fn increment_counter(ctx: *Context, _: *httpz.Request, res: *httpz.Response) !void {
+    const cmd = okredis.commands.strings.INCR.init(COMMUNITY_COUNTER);
+
+    const reply = try ctx.redis_client.sendAlloc(okredis.types.OrFullErr(i64), res.arena, cmd);
+
+    switch (reply) {
+        .Ok => |val| {
+            res.setStatus(std.http.Status.ok);
+            try res.json(.{ .totalCount = val }, .{});
+        },
+        .Nil => {
+            res.setStatus(std.http.Status.internal_server_error);
+            try res.json(.{ .err = "Redis unexpectedly returned Nil" }, .{});
+        },
+        .Err => |err| {
+            res.setStatus(std.http.Status.internal_server_error);
+            try res.json(.{ .err = err.message }, .{});
+        },
+    }
+    // trailing newline makes e.g. curl output friendlier on the command line
+    try res.writer().writeByte('\n');
 }
