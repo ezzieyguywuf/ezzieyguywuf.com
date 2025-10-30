@@ -113,6 +113,7 @@ pub fn main() !void {
     var router = try server.router(.{});
 
     router.post("/increment_counter", increment_counter, .{});
+    router.get("/get_count", get_count, .{});
 
     try server.listen();
 }
@@ -120,6 +121,28 @@ pub fn main() !void {
 fn increment_counter(ctx: *Context, _: *httpz.Request, res: *httpz.Response) !void {
     const cmd = okredis.commands.strings.INCR.init(COMMUNITY_COUNTER);
 
+    const reply = try ctx.redis_client.sendAlloc(okredis.types.OrFullErr(i64), res.arena, cmd);
+
+    switch (reply) {
+        .Ok => |val| {
+            res.setStatus(std.http.Status.ok);
+            try res.json(.{ .totalCount = val }, .{});
+        },
+        .Nil => {
+            res.setStatus(std.http.Status.internal_server_error);
+            try res.json(.{ .err = "Redis unexpectedly returned Nil" }, .{});
+        },
+        .Err => |err| {
+            res.setStatus(std.http.Status.internal_server_error);
+            try res.json(.{ .err = err.message }, .{});
+        },
+    }
+    // trailing newline makes e.g. curl output friendlier on the command line
+    try res.writer().writeByte('\n');
+}
+
+fn get_count(ctx: *Context, _: *httpz.Request, res: *httpz.Response) !void {
+    const cmd = okredis.commands.strings.GET.init(COMMUNITY_COUNTER);
     const reply = try ctx.redis_client.sendAlloc(okredis.types.OrFullErr(i64), res.arena, cmd);
 
     switch (reply) {
