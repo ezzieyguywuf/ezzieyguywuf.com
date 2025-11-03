@@ -12,13 +12,48 @@
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      count = data.totalCount;
+      count = parseInt(data.totalCount || "-1", 10);
     } catch (error) {
       console.error('Failed to increment counter:', error);
       count = 'Error';
     }
   }
 
+  let eventSource;
+  function connect(){
+    if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
+      eventSource.close();
+    }
+
+    console.log('Connecting to server for streaming updates...');
+    eventSource = new EventSource('/api/listen_count');
+
+    eventSource.onopen = (event) => {
+      console.log('Connection to backend complete');
+    }
+
+    eventSource.onmessage = (event) => {
+      count = parseInt(event.data || "-1", 10);
+    };
+
+    eventSource.onerror = (err) => {
+      console.error('EventSource failed:', err);
+    };
+
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilitystate === 'visible') {
+      console.log('Page is visible, checking connection');
+
+      if (eventSource && eventSource.readyState !== EventSource.CLOSED) {
+        console.log('Connection was dead, re-establishing');
+        connect();
+      } else if (!eventSource) {
+        connect();
+      }
+    }
+  }
   onMount(() => {
     async function getInitialCount() {
       console.log('Trying to get initial count');
@@ -28,29 +63,23 @@
           throw new Error('Failed to fetch initial count');
         }
         const data = await resp.json();
-        count = data.totalCount;
+        count = parseInt(data.totalCount || "-1", 10);
       } catch (error) {
         console.error(error);
       }
     }
     getInitialCount();
 
-    console.log('Connecting to server for streaming updates...');
-    const eventSource = new EventSource('/api/listen_count');
-
-    eventSource.onmessage = (event) => {
-      count = event.data;
-    };
-
-    eventSource.onerror = (err) => {
-      console.error('EventSource failed:', err);
-    };
+    connect();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       console.log('Closing SSE connection.');
-      eventSource.close();
+      if (eventSource) {
+        eventSource.close();
+      }
     }
-  })
+  });
 </script>
 
 <div class="counter-widget">
