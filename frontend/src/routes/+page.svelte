@@ -1,7 +1,16 @@
 <script lang="ts">
 	import CounterWidget from '$lib/CounterWidget.svelte';
+  import StreamingCounter from '$lib/StreamingCounter.svelte';
 
 	const changelog = [
+    {
+      date: '2025-11-03',
+      changes: [
+        'Launched Community Counter!',
+        'Moved frontend off of github pages to my gaming rig',
+        'Started hosting zig backend on my gaming rig',
+      ]
+    },
 		{
 			date: '2025-10-23',
 			changes: [
@@ -21,11 +30,22 @@
 	];
 </script>
 
+<svelte:head>
+	<h1>Wolfgang E. Sanyer's Website</h1>
+  <meta name="description" content="A self-hosted personal site. Hosts a counter game that everyone can participate in together."/>
+</svelte:head>
+
 <main>
-	<h1>ezzieyguywuf.com</h1>
 
 	<div class="card">
-		<p>This button tells you how many time's it's been clicked!</p>
+    <h2>Live Community Counter</h2>
+		<p>This is shared between anyone who visits the site: that's why there's no
+    reset. Let's see how high it will go!</p>
+		<StreamingCounter />
+	</div>
+	<div class="card">
+    <h2>Local "Just You" Counter</h2>
+		<p>This button is local to your browser. You can reset whenever you want, otherwise the count will persist until or if you clear your browser cookies</p>
 		<CounterWidget />
 	</div>
 
@@ -41,6 +61,9 @@
 
 	<h2>Coming Soon</h2>
 	<ul>
+    <li>Maybe leaderboard? (who's clicked the most!)</li>
+    <li>Maybe live tracking of who's clicking now!</li>
+    <li>Maybe a map showing who's clicking from where!</li>
 		<li>Maybe a blog?</li>
 		<li>More interesting things to click.</li>
 		<li>Maybe a login (to save your clicks!)</li>
