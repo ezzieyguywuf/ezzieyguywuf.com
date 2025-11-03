@@ -1,14 +1,14 @@
-node_modules
+frontend/node_modules
 
 # Output
-.output
-.vercel
-.netlify
-.wrangler
-.zig-cache
-zig-out
-/.svelte-kit
-/build
+frontend/.output
+frontend/.vercel
+frontend/.netlify
+frontend/.wrangler
+frontend/.svelte-kit
+frontend/build
+backend/.zig-cache
+backend/zig-out
 
 # OS
 .DS_Store
