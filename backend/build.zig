@@ -27,6 +27,7 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/hiredis.zig"),
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         }),
         .linkage = .static,
     });
@@ -44,7 +45,7 @@ pub fn build(b: *std.Build) void {
     });
 
     hiredis_lib.addIncludePath(b.path(hiredis_path));
-    hiredis_lib.linkLibC();
+    // hiredis_lib.linkLibC();
 
     exe.linkLibrary(hiredis_lib);
     exe.addIncludePath(b.path(hiredis_path));

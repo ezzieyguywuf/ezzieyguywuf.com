@@ -263,9 +263,9 @@ const SSEListener = struct {
     stream: std.net.Stream,
 
     // returns whether the write succeeded
-    fn try_write(self: *SSEListener, str: []const u8) bool {
+    fn try_write(self: *SSEListener, prefix: []const u8, str: []const u8) bool {
         var writer = self.stream.writer(&self.buf);
-        _ = writer.interface.print("data: {s}\n\n", .{str}) catch |err| {
+        _ = writer.interface.print("{s}{s}\n\n", .{ prefix, str }) catch |err| {
             switch (err) {
                 error.WriteFailed => return false,
             }
@@ -313,7 +313,7 @@ const SSEListenerRegistry = struct {
         }
         for (keys.items) |key| {
             var listener = self.listeners.getPtr(key).?;
-            if (!listener.try_write(msg)) {
+            if (!listener.try_write("data: ", msg)) {
                 std.log.err("Unable to write message to listener", .{});
             }
         }
@@ -331,7 +331,7 @@ const SSEListenerRegistry = struct {
         }
         for (keys.items) |key| {
             var listener = self.listeners.get(key).?;
-            if (!listener.try_write(": heartbeat\n\n")) {
+            if (!listener.try_write(":", "heartbeat")) {
                 std.log.info("Failed to write heartbeat, assuming connection closed", .{});
                 _ = self.listeners.remove(key);
                 continue;
